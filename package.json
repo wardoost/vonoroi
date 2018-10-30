@@ -1,8 +1,13 @@
 {
   "name": "voronoi",
   "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wardoost/vonoroi.git"
+  },
   "scripts": {
-    "start": "parcel index.html"
+    "start": "parcel index.html",
+    "build": "parcel build index.html"
   },
   "devDependencies": {
     "parcel-bundler": "^1.10.3"

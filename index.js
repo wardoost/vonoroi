@@ -2,12 +2,13 @@ import { Delaunay } from 'd3-delaunay';
 import './style.css';
 
 const SIZE = (window.innerWidth + window.innerHeight) / 2 / 50;
-const FORCE = 5;
+const FORCE = 3;
 let points = [];
 let width = window.innerWidth;
 let height = window.innerHeight;
 let time = 0;
-const mouseRadius = 200
+let globalMouseX = width / 2;
+let globalMouseY = height / 2; 
 
 function updatePoints() {
   console.log('updatePoints')
@@ -28,16 +29,16 @@ function updatePoints() {
   points = newPoints;
 }
 
-function isPointInCircle({ x, y, radius }) {
-  if (x > radius || y > radius) {
+function isPointInCircle({ dx, dy, radius }) {
+  if (dx > radius || dy > radius) {
     return false
   }
 
-  if (x + y <= radius) {
+  if (dx + dy <= radius) {
     return true
   }
 
-  if (x^2 + y^2 <= radius^2) {
+  if (dx^2 + dy^2 <= radius^2) {
     return true
   }
 
@@ -46,11 +47,13 @@ function isPointInCircle({ x, y, radius }) {
 
 function update ({ parent, mouseX = width / 2, mouseY = height / 2 }) {
   const delaunay = Delaunay.from(points.map(([x, y]) => {
+    const radius = 160
     const dx = Math.abs(x - mouseX)
     const dy = Math.abs(y - mouseY)
 
-    if (isPointInCircle({x: dx, y: dy, radius: 100})) {
-      return [x, y].map(value => value + ((-0.5 + Math.random()) * FORCE))
+    if (isPointInCircle({dx, dy, radius})) {
+      const force = FORCE * 1 - (dx / radius + dy / radius) / 2
+      return [x, y].map(value => value + ((-0.5 + Math.random()) * force))
     }
 
     return [x, y]
@@ -67,25 +70,35 @@ function update ({ parent, mouseX = width / 2, mouseY = height / 2 }) {
     </svg>
   `
 
-  // setTimeout(() => {
-  //   window.requestAnimationFrame(() => update(parent));
-  // }, 1000)
+  setTimeout(() => {
+    window.requestAnimationFrame(() => update({
+      parent: app,
+      mouseX: globalMouseX,
+      mouseY: globalMouseY
+    }));
+  }, 10)
 }
 
 
-const app = document.getElementById('app')
-app.addEventListener('click', updatePoints)
+const app = document.getElementById('app');
+app.addEventListener('mouseup', evt => {
+  evt.preventDefault();
+
+  updatePoints();
+})
 updatePoints();
 update({
   parent: app
 });
 
 document.addEventListener("mousemove", evt => {
-  window.requestAnimationFrame(() => update({
-    parent: app,
-    mouseX: evt.clientX,
-    mouseY: evt.clientY
-  }));
+  // window.requestAnimationFrame(() => update({
+  //   parent: app,
+  //   mouseX: evt.clientX,
+  //   mouseY: evt.clientY
+  // }));
+  globalMouseX = evt.clientX;
+  globalMouseY = evt.clientY;
 });
 
 // function throttle(type, name, target = window) {
